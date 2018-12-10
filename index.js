@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-var fuse = require('fuse-bindings');
-var Dat = require('dat-node');
-var program = require('commander');
+const fuse = require('fuse-bindings');
+const Dat = require('dat-node');
+const program = require('commander');
 
 program
   .version(require('./package.json').version);
@@ -17,7 +17,7 @@ program
 
 program.parse(process.argv);
 
-if (program.args.length === 0){
+if (program.args.length === 0) {
   program.help();
 }
 
@@ -28,7 +28,7 @@ function mountDat(datKey, mountPath, datLocation, version) {
     sparse: true,
   }, function(err, dat) {
     if (err) {
-      console.log("Error! " + err);
+      console.error("Error!", err);
       return;
     }
     dat.joinNetwork();
@@ -48,7 +48,6 @@ function mountDat(datKey, mountPath, datLocation, version) {
 }
 
 function doMount(dat, mountPath) {
-
   // FUSE functions, mostly wrappers around hyperdrive calls
   function readdir(path, cb) {
     console.log('readdir(%s)', path);
@@ -69,7 +68,7 @@ function doMount(dat, mountPath) {
     console.log('read(%s, %s, %d, %d)', path, fd, len, pos);
     return dat.archive.read(fd, buf, 0, len, pos, function(err, bytes, buffer) {
       if (err) {
-        console.log("Error reading:", err);
+        console.error("Error reading:", err);
         cb(0);
       } else {
         cb(bytes, buffer);
@@ -95,16 +94,16 @@ function doMount(dat, mountPath) {
     if (err) {
       throw err;
     }
-    console.log('filesystem mounted on ' + mountPath);
+    console.log('filesystem mounted on', mountPath);
   });
 
   // Cleanup when we get ctrl-C
   process.on('SIGINT', function() {
     fuse.unmount(mountPath, function(err) {
       if (err) {
-        console.log('filesystem at ' + mountPath + ' not unmounted', err);
+        console.error('filesystem at', mountPath, 'not unmounted', err);
       } else {
-        console.log('filesystem at ' + mountPath + ' unmounted');
+        console.log('filesystem at', mountPath, 'unmounted');
       }
     });
     console.log("Leaving network...");
